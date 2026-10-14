@@ -41,34 +41,34 @@ logic [2:0] waddr1;
 logic [tinytracer_pkg::WLEN-1:0] wdata1;
 
 always_comb begin
-    assign wen0 = load | wen;
-    assign wen1 = load;
+    wen0 = load | wen;
+    wen1 = load;
 
-    assign waddr0 = load ? load_cycle : waddr;
-    assign waddr1 = load_cycle + 3'h3;
+    waddr0 = load ? load_cycle : waddr;
+    waddr1 = load_cycle + 3'h3;
 
     if (load) begin
         case (load_cycle)
             2'b00: begin
-                assign wdata0 = load_u.x;
-                assign wdata1 = load_v.x;
+                wdata0 = load_u.x;
+                wdata1 = load_v.x;
             end
             2'b01: begin
-                assign wdata0 = load_u.y;
-                assign wdata1 = laod_v.y;
+                wdata0 = load_u.y;
+                wdata1 = laod_v.y;
             end
             2'b10: begin
-                assign wdata0 = load_u.z;
-                assign wdata1 = load_v.z;
+                wdata0 = load_u.z;
+                wdata1 = load_v.z;
             end
             default: begin
-                assign wdata0 = wdata;
-                assign wdata1 = load_v.x;
+                wdata0 = wdata;
+                wdata1 = load_v.x;
             end
         endcase
     end else begin
-        assign wdata0 = wdata;
-        assign wdata1 = load_v.x;
+        wdata0 = wdata;
+        wdata1 = load_v.x;
     end
 end
 
