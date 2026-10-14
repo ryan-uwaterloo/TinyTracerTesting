@@ -45,7 +45,7 @@ always_comb begin
     wen1 = load;
 
     waddr0 = load ? load_cycle : waddr;
-    waddr1 = load_cycle + 3'h3;
+    waddr1 = {1'b0,load_cycle} + 3'h3;
 
     if (load) begin
         case (load_cycle)
@@ -55,7 +55,7 @@ always_comb begin
             end
             2'b01: begin
                 wdata0 = load_u.y;
-                wdata1 = laod_v.y;
+                wdata1 = load_v.y;
             end
             2'b10: begin
                 wdata0 = load_u.z;
