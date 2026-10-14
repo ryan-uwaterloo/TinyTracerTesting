@@ -32,6 +32,46 @@ localparam int N_REGS = 8;
 logic [(tinytracer_pkg::WLEN-1) : 0] regs [N_REGS-1 : 0]; 
 logic [1:0] load_cycle;
 
+logic wen0;
+logic [2:0] waddr0;
+logic [tinytracer_pkg::WLEN-1:0] wdata0;
+
+logic wen1;
+logic [2:0] waddr1;
+logic [tinytracer_pkg::WLEN-1:0] wdata1;
+
+always_comb begin
+    assign wen0 = load | wen;
+    assign wen1 = load;
+
+    assign waddr0 = load ? load_cycle : waddr;
+    assign waddr1 = load_cycle + 3'h3;
+
+    if (load) begin
+        case (load_cycle)
+            2'b00: begin
+                assign wdata0 = load_u.x;
+                assign wdata1 = load_v.x;
+            end
+            2'b01: begin
+                assign wdata0 = load_u.y;
+                assign wdata1 = laod_v.y;
+            end
+            2'b10: begin
+                assign wdata0 = load_u.z;
+                assign wdata1 = load_v.z;
+            end
+            default: begin
+                assign wdata0 = wdata;
+                assign wdata1 = load_v.x;
+            end
+        endcase
+    end else begin
+        assign wdata0 = wdata;
+        assign wdata1 = load_v.x;
+    end
+end
+
 always_ff @(posedge clk) begin 
     if (!rst_n) begin 
         // Reset all registers to 0
@@ -41,29 +81,14 @@ always_ff @(posedge clk) begin
         load_cycle <= '0;
     end else begin 
         if (load) begin 
-            case (load_cycle)
-                2'b00: begin
-                    // Cycle 0: load x
-                    regs[0] <= load_u.x;
-                    regs[3] <= load_v.x;
-                    load_cycle <= 2'b01;
-                end
-                2'b01: begin
-                    // Cycle 1: load y
-                    regs[1] <= load_u.y;
-                    regs[4] <= load_v.y;
-                    load_cycle <= 2'b10;
-                end
-                2'b10: begin
-                    // Cycle 2: load z
-                    regs[2] <= load_u.z;
-                    regs[5] <= load_v.z;
-                    load_cycle <= 2'b00;
-                end
-            endcase
-        end else if (wen) begin 
-            regs[waddr] <= wdata; 
+            load_cycle <= load_cycle[1] ? 2'b00 : load_cycle + 2'b01;
         end 
+        if (wen0) begin 
+            regs[waddr0] <= wdata0;
+        end
+        if (wen1) begin
+            regs[waddr1] <= wdata1;
+        end
     end 
 end 
 
